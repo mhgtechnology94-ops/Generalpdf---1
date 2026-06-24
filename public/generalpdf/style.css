@@ -1,0 +1,44 @@
+/* Generalpdf Custom Stylesheet */
+
+/* Custom smooth active tab styles */
+.template-tab {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-tab:not(.active):hover {
+    background-color: rgb(248, 250, 252);
+    border-color: rgb(203, 213, 225);
+    transform: translateY(-1px);
+}
+
+.template-tab.active {
+    box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.08), 0 2px 4px -1px rgba(225, 29, 72, 0.04);
+}
+
+/* Page Previews */
+iframe.pdf-preview {
+    border: none;
+    background: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generalpdf - Professional PDF Document Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-rose-600 text-white p-2 rounded-lg flex items-center justify-center">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">Generalpdf</h1>
+                    <p class="text-xs text-slate-500 font-medium">Professional Document Generator</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg font-semibold text-sm flex items-center space-x-2 shadow-sm transition-all">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Download PDF</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Controls Panel (Left) -->
+        <section class="lg:col-span-5 flex flex-col space-y-6">
+            
+            <!-- Document Type Selector -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">1. Document Template</h2>
+                <div class="grid grid-cols-3 gap-3">
+                    <button type="button" id="templateInvoice" class="template-tab active flex flex-col items-center justify-center p-3 rounded-xl border border-rose-600 bg-rose-50/50 text-rose-600 font-medium transition-all text-center">
+                        <i data-lucide="receipt" class="w-5 h-5 mb-2"></i>
+                        <span class="text-xs">Invoice</span>
+                    </button>
+                    <button type="button" id="templateResume" class="template-tab flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50 font-medium transition-all text-center">
+                        <i data-lucide="briefcase" class="w-5 h-5 mb-2"></i>
+                        <span class="text-xs">Resume</span>
+                    </button>
+                    <button type="button" id="templateLetter" class="template-tab flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 hover:border-slate-300 text-slate-600 hover:bg-slate-50 font-medium transition-all text-center">
+                        <i data-lucide="mail" class="w-5 h-5 mb-2"></i>
+                        <span class="text-xs">Business Letter</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Editor Fields Container -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">2. Document Content</h2>
+                
+                <form id="pdfForm" class="space-y-4 flex-1">
+                    
+                    <!-- Common Metadata -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Brand Primary Color</label>
+                            <input type="color" id="primaryColor" value="#e11d48" class="w-full h-9 rounded-lg border border-slate-200 cursor-pointer p-1">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Layout</label>
+                            <select id="layout" class="w-full h-9 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <option value="portrait">Portrait (A4)</option>
+                                <option value="landscape">Landscape (A4)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Fields (Invoice-specific initially) -->
+                    <div id="dynamicFields" class="space-y-4">
+                        <!-- Filled by script.js dynamically based on template selection -->
+                    </div>
+
+                    <!-- Extra settings -->
+                    <div class="border-t border-slate-100 pt-4 mt-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-500 flex items-center space-x-1">
+                                <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                                <span>Includes standard headers, footers and page numbering automatically.</span>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Preview Panel (Right) -->
+        <section class="lg:col-span-7 flex flex-col">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col min-h-[600px] lg:min-h-0">
+                <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2.5 w-2.5 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <h2 class="text-sm font-semibold tracking-tight text-slate-700">Live Render Canvas</h2>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button id="refreshPreviewBtn" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition-all" title="Refresh Preview">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- PDF Viewer / Preview Canvas Area -->
+                <div class="flex-1 bg-slate-100 p-6 flex items-center justify-center relative overflow-hidden">
+                    <div id="previewContainer" class="w-full h-full max-w-full max-h-full flex items-center justify-center">
+                        <!-- Loaded dynamic iframe or message -->
+                        <div class="text-center p-8 max-w-sm">
+                            <i data-lucide="loader" class="w-10 h-10 text-rose-500 animate-spin mx-auto mb-4"></i>
+                            <p class="text-sm font-semibold text-slate-700">Generating preview...</p>
+                            <p class="text-xs text-slate-500 mt-1">Please wait while the PDF compiles client-side.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-400 font-medium">
+            &copy; 2026 Generalpdf. Made to fit your workflow beautifully.
+        </div>
+    </footer>
+
+    <!-- Script to execute logic -->
+    <script src="script.js"></script>
+</body>
+</html>

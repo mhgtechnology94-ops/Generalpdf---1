@@ -1,0 +1,6 @@
+{
+  "name": "Generalpdf",
+  "description": "Configure, preview, and build the Generalpdf HTML/CSS/JS application",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
