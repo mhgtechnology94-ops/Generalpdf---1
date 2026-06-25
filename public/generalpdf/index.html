@@ -57,47 +57,175 @@
                         <i data-lucide="mail" class="w-5 h-5 mb-2"></i>
                         <span class="text-xs">Business Letter</span>
                     </button>
-                </div>
             </div>
-
-            <!-- Editor Fields Container -->
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">2. Document Content</h2>
-                
-                <form id="pdfForm" class="space-y-4 flex-1">
-                    
-                    <!-- Common Metadata -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Brand Primary Color</label>
-                            <input type="color" id="primaryColor" value="#e11d48" class="w-full h-9 rounded-lg border border-slate-200 cursor-pointer p-1">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Layout</label>
-                            <select id="layout" class="w-full h-9 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
-                                <option value="portrait">Portrait (A4)</option>
-                                <option value="landscape">Landscape (A4)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Dynamic Fields (Invoice-specific initially) -->
-                    <div id="dynamicFields" class="space-y-4">
-                        <!-- Filled by script.js dynamically based on template selection -->
-                    </div>
-
-                    <!-- Extra settings -->
-                    <div class="border-t border-slate-100 pt-4 mt-6">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-slate-500 flex items-center space-x-1">
-                                <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                                <span>Includes standard headers, footers and page numbering automatically.</span>
-                            </span>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </section>
+ 
+             <!-- Interactive Workspace Tabs -->
+             <div class="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm flex space-x-1">
+                 <button type="button" id="tabManual" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-rose-600 text-white shadow-sm transition-all text-center cursor-pointer">
+                     Manual Fields
+                 </button>
+                 <button type="button" id="tabAiContent" class="flex-1 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center space-x-1 text-center cursor-pointer">
+                     <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i>
+                     <span>AI Assistant</span>
+                 </button>
+                 <button type="button" id="tabAiImage" class="flex-1 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all flex items-center justify-center space-x-1 text-center cursor-pointer">
+                     <i data-lucide="image" class="w-3.5 h-3.5 text-indigo-500"></i>
+                     <span>AI Logo Gen</span>
+                 </button>
+             </div>
+ 
+             <!-- Controls Content Panels -->
+             <div class="flex-1 flex flex-col">
+                 <!-- Manual Editor Fields Container -->
+                 <div id="manualFieldsPanel" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col">
+                     <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">2. Document Content</h2>
+                     
+                     <form id="pdfForm" class="space-y-4 flex-1">
+                         
+                         <!-- Common Metadata -->
+                         <div class="grid grid-cols-2 gap-4">
+                             <div>
+                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Brand Primary Color</label>
+                                 <input type="color" id="primaryColor" value="#e11d48" class="w-full h-9 rounded-lg border border-slate-200 cursor-pointer p-1">
+                             </div>
+                             <div>
+                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Layout</label>
+                                 <select id="layout" class="w-full h-9 px-3 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                     <option value="portrait">Portrait (A4)</option>
+                                     <option value="landscape">Landscape (A4)</option>
+                                 </select>
+                             </div>
+                         </div>
+ 
+                         <!-- Dynamic Fields (Invoice-specific initially) -->
+                         <div id="dynamicFields" class="space-y-4">
+                             <!-- Filled by script.js dynamically based on template selection -->
+                         </div>
+ 
+                         <!-- Extra settings -->
+                         <div class="border-t border-slate-100 pt-4 mt-6">
+                             <div class="flex items-center justify-between">
+                                 <span class="text-xs font-semibold text-slate-500 flex items-center space-x-1">
+                                     <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                                     <span>Includes standard headers, footers and page numbering automatically.</span>
+                                 </span>
+                             </div>
+                         </div>
+                     </form>
+                 </div>
+ 
+                 <!-- AI Content Copilot Panel -->
+                 <div id="aiContentPanel" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 flex flex-col">
+                     <div class="flex items-center space-x-2 pb-2 border-b border-slate-100">
+                         <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
+                             <i data-lucide="sparkles" class="w-5 h-5 animate-pulse"></i>
+                         </div>
+                         <div>
+                             <h3 class="text-sm font-bold text-slate-900">AI Document Assistant</h3>
+                             <p class="text-[11px] text-slate-500">Draft or rewrite content using Gemini intelligence</p>
+                         </div>
+                     </div>
+                     
+                     <div class="space-y-3">
+                         <div>
+                             <label class="block text-xs font-semibold text-slate-600 mb-1">Select Gemini Model</label>
+                             <select id="geminiTextModel" class="w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                 <option value="gemini-3.5-flash">Gemini 3.5 Flash (Fast, General Text)</option>
+                                 <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (Complex/Creative Reasoning)</option>
+                                 <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (Ultra Fast)</option>
+                             </select>
+                         </div>
+ 
+                         <div>
+                             <label class="block text-xs font-semibold text-slate-600 mb-1">AI Instruction Prompt</label>
+                             <textarea id="aiTextPrompt" rows="5" class="w-full p-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed" placeholder="Tell Gemini what to write. E.g.: 'Write a resume for a Senior DevOps Engineer with 8 years of AWS experience and Kubernetes certifications' or 'Draft a formal business letter proposing a partnership on a solar development initiative...'"></textarea>
+                         </div>
+ 
+                         <button type="button" id="generateTextBtn" class="w-full bg-slate-900 hover:bg-slate-800 text-white h-10 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all cursor-pointer">
+                             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+                             <span>Generate Content with Gemini</span>
+                         </button>
+                         
+                         <div id="aiTextStatus" class="hidden text-xs text-center p-2.5 rounded-lg border font-medium"></div>
+                     </div>
+                 </div>
+ 
+                 <!-- Gemini Image Generator Panel -->
+                 <div id="aiImagePanel" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 flex flex-col">
+                     <div class="flex items-center space-x-2 pb-2 border-b border-slate-100">
+                         <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                             <i data-lucide="image" class="w-5 h-5"></i>
+                         </div>
+                         <div>
+                             <h3 class="text-sm font-bold text-slate-900">Gemini Image Generator</h3>
+                             <p class="text-[11px] text-slate-500">Design high-quality logos and brand graphics for your PDFs</p>
+                         </div>
+                     </div>
+                     
+                     <div class="space-y-3">
+                         <div>
+                             <label class="block text-xs font-semibold text-slate-600 mb-1">Select Imagen Model</label>
+                             <select id="geminiImageModel" class="w-full h-9 px-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                 <option value="gemini-3-pro-image-preview">Gemini 3 Pro Image (Paid Studio Quality)</option>
+                                 <option value="gemini-3.1-flash-image-preview">Gemini 3.1 Flash Image (High Resolution)</option>
+                                 <option value="gemini-2.5-flash-image">Gemini 2.5 Flash Image (General Purpose)</option>
+                             </select>
+                         </div>
+ 
+                         <div>
+                             <label class="block text-xs font-semibold text-slate-600 mb-1">Graphic Design Prompt</label>
+                             <textarea id="aiImagePrompt" rows="4" class="w-full p-3 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 leading-relaxed" placeholder="E.g.: 'Elegant vector logo of a blue phoenix, clean emblem style, high resolution on white background, premium brand aesthetic...'"></textarea>
+                         </div>
+ 
+                         <div class="grid grid-cols-2 gap-3">
+                             <div>
+                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Aspect Ratio</label>
+                                 <select id="aiAspectRatio" class="w-full h-9 px-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                     <option value="1:1">1:1 (Square Logo)</option>
+                                     <option value="3:2">3:2 (Horizontal)</option>
+                                     <option value="2:3">2:3 (Vertical Badge)</option>
+                                     <option value="4:3">4:3 (Classic Banner)</option>
+                                     <option value="3:4">3:4 (Portrait Badge)</option>
+                                     <option value="16:9">16:9 (Landscape Banner)</option>
+                                     <option value="9:16">9:16 (Tall Banner)</option>
+                                     <option value="21:9">21:9 (Ultrawide Logo)</option>
+                                 </select>
+                             </div>
+                             <div>
+                                 <label class="block text-xs font-semibold text-slate-600 mb-1">Image Size</label>
+                                 <select id="aiImageSize" class="w-full h-9 px-2 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                     <option value="1K">1K (Standard Details)</option>
+                                     <option value="2K">2K (High Fidelity)</option>
+                                     <option value="4K">4K (Ultra Quality)</option>
+                                 </select>
+                             </div>
+                         </div>
+ 
+                         <button type="button" id="generateImageBtn" class="w-full bg-slate-900 hover:bg-slate-800 text-white h-10 rounded-lg font-semibold text-xs flex items-center justify-center space-x-2 shadow-sm transition-all cursor-pointer">
+                             <i data-lucide="sparkles" class="w-3.5 h-3.5 text-indigo-400"></i>
+                             <span>Generate Logo with Gemini</span>
+                         </button>
+ 
+                         <div id="aiImageStatus" class="hidden text-xs text-center p-2.5 rounded-lg border font-medium"></div>
+ 
+                         <!-- Image Result and insert action -->
+                         <div id="aiImageResultContainer" class="hidden border border-slate-200 rounded-xl p-3 bg-slate-50 space-y-3">
+                             <div class="flex items-center justify-between">
+                                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Generated Brand Logo</span>
+                                 <span id="aiImageInfoText" class="text-[9px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded">Ready</span>
+                             </div>
+                             <div class="aspect-square w-full bg-white rounded-lg border border-slate-100 flex items-center justify-center overflow-hidden p-2">
+                                 <img id="aiImageResultPreview" src="" class="max-w-full max-h-full object-contain" referrerPolicy="no-referrer">
+                             </div>
+                             <button type="button" id="insertImageBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-9 rounded-lg font-bold text-xs flex items-center justify-center space-x-1.5 shadow-sm transition-all cursor-pointer">
+                                 <i data-lucide="check-square" class="w-3.5 h-3.5"></i>
+                                 <span>Apply & Insert Logo into PDF</span>
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </section>
 
         <!-- Preview Panel (Right) -->
         <section class="lg:col-span-7 flex flex-col">

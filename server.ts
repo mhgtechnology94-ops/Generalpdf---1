@@ -2,6 +2,27 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
+import { GoogleGenAI } from "@google/genai";
+
+let aiClient: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is required. Please add it via Settings > Secrets panel.");
+    }
+    aiClient = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return aiClient;
+}
 
 async function startServer() {
   const app = express();
@@ -73,6 +94,81 @@ async function startServer() {
     } catch (err: any) {
       console.error("[Generalpdf] Error reading files:", err);
       res.status(500).json({ error: err.message || "Failed to read files" });
+    }
+  });
+
+  // API Route: Gemini Text Content Generation
+  app.post("/api/gemini/generate-content", async (req, res) => {
+    try {
+      const { model = "gemini-3.5-flash", prompt, systemInstruction } = req.body;
+      if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required" });
+      }
+
+      const ai = getAiClient();
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: systemInstruction ? { systemInstruction } : undefined,
+      });
+
+      res.json({ text: response.text });
+    } catch (err: any) {
+      console.error("[Generalpdf] Gemini Text Error:", err);
+      res.status(500).json({ error: err.message || "Failed to generate content using Gemini" });
+    }
+  });
+
+  // API Route: Gemini Image Generation (using nano banana series models)
+  app.post("/api/gemini/generate-image", async (req, res) => {
+    try {
+      const { model = "gemini-3-pro-image-preview", prompt, size = "1K", aspectRatio = "1:1" } = req.body;
+      if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required" });
+      }
+
+      const ai = getAiClient();
+      console.log(`[Generalpdf] Generating image with model: ${model}, prompt: ${prompt}, size: ${size}, aspectRatio: ${aspectRatio}`);
+
+      const response = await ai.models.generateContent({
+        model,
+        contents: {
+          parts: [{ text: prompt }]
+        },
+        config: {
+          imageConfig: {
+            aspectRatio,
+            imageSize: size
+          }
+        }
+      });
+
+      let base64Image = "";
+      if (response.candidates?.[0]?.content?.parts) {
+        for (const part of response.candidates[0].content.parts) {
+          if (part.inlineData) {
+            base64Image = part.inlineData.data;
+            break;
+          }
+        }
+      }
+
+      if (!base64Image) {
+        let textResponse = "";
+        if (response.candidates?.[0]?.content?.parts) {
+          for (const part of response.candidates[0].content.parts) {
+            if (part.text) {
+              textResponse += part.text + " ";
+            }
+          }
+        }
+        throw new Error(textResponse || "No image data was returned by the Gemini model.");
+      }
+
+      res.json({ imageUrl: `data:image/png;base64,${base64Image}` });
+    } catch (err: any) {
+      console.error("[Generalpdf] Gemini Image Error:", err);
+      res.status(500).json({ error: err.message || "Failed to generate image using Gemini" });
     }
   });
 

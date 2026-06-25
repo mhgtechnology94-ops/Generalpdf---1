@@ -15,9 +15,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const downloadPdfBtn = document.getElementById("downloadPdfBtn");
     const previewContainer = document.getElementById("previewContainer");
 
+    // AI DOM Elements
+    const tabManual = document.getElementById("tabManual");
+    const tabAiContent = document.getElementById("tabAiContent");
+    const tabAiImage = document.getElementById("tabAiImage");
+    const manualFieldsPanel = document.getElementById("manualFieldsPanel");
+    const aiContentPanel = document.getElementById("aiContentPanel");
+    const aiImagePanel = document.getElementById("aiImagePanel");
+
+    const geminiTextModel = document.getElementById("geminiTextModel");
+    const aiTextPrompt = document.getElementById("aiTextPrompt");
+    const generateTextBtn = document.getElementById("generateTextBtn");
+    const aiTextStatus = document.getElementById("aiTextStatus");
+
+    const geminiImageModel = document.getElementById("geminiImageModel");
+    const aiImagePrompt = document.getElementById("aiImagePrompt");
+    const aiAspectRatio = document.getElementById("aiAspectRatio");
+    const aiImageSize = document.getElementById("aiImageSize");
+    const generateImageBtn = document.getElementById("generateImageBtn");
+    const aiImageStatus = document.getElementById("aiImageStatus");
+    const aiImageResultContainer = document.getElementById("aiImageResultContainer");
+    const aiImageResultPreview = document.getElementById("aiImageResultPreview");
+    const insertImageBtn = document.getElementById("insertImageBtn");
+    const aiImageInfoText = document.getElementById("aiImageInfoText");
+
     // State
     let currentTemplate = "invoice"; // default
     let timeoutId = null;
+    let activeControlTab = "manual"; // manual | aiContent | aiImage
+    let latestGeneratedImageBase64 = null; // To store the base64 generated logo
 
     // Default template data values
     const templateData = {
@@ -35,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
             itemName2: "Consultancy & System Migration Services",
             itemQty2: 4,
             itemRate2: 150,
-            terms: "Payment is due within 30 days. Thank you for your business!"
+            terms: "Payment is due within 30 days. Thank you for your business!",
+            logo: null
         },
         resume: {
             fullName: "Alex Rivera",
@@ -46,7 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
             summary: "Passionate engineer with 6+ years of experience crafting ultra-polished, responsive user experiences. Specializes in React, Tailwind CSS, TypeScript, and modern design systems.",
             experience: "Senior Frontend Engineer | Acme Corp (2024-Present)\n- Led migration of legacy codebases into responsive React and Vite apps.\n- Architected core UI components, improving page speeds by 35%.\n\nSoftware Developer | PixelCraft Studio (2021-2023)\n- Implemented interactive dashboards and canvas-based reports.",
             education: "B.S. Computer Science | Stanford University (2017 - 2021)",
-            skills: "React, Tailwind CSS, TypeScript, Node.js, D3.js, UX Design, Git, PDF Compilation"
+            skills: "React, Tailwind CSS, TypeScript, Node.js, D3.js, UX Design, Git, PDF Compilation",
+            logo: null
         },
         letter: {
             senderName: "Diana Prince",
@@ -58,7 +86,8 @@ document.addEventListener("DOMContentLoaded", () => {
             date: "2026-06-24",
             subject: "RE: System Migration and Workspace Configuration",
             body: "I am writing to formally confirm that your Generalpdf workspace has been fully configured and is ready for production. Your source files, including raw HTML, CSS, and JS components, have been securely loaded and configured to render high-performance, client-side documents on the fly.\n\nYou can now seamlessly preview all layouts in real-time, modify content fields side-by-side, and push the entire workspace to your GitHub repository to maintain persistence.\n\nPlease let us know if your team requires further customized templates or layout updates.",
-            signoff: "Sincerely yours,"
+            signoff: "Sincerely yours,",
+            logo: null
         }
     };
 
@@ -303,11 +332,27 @@ document.addEventListener("DOMContentLoaded", () => {
             doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
             doc.rect(0, 0, pageWidth, 35, 'F');
 
-            // Header Text
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.text(data.title.toUpperCase(), 15, 22);
+            // Header Text & Logo
+            if (data.logo) {
+                try {
+                    doc.addImage(data.logo, 'PNG', 15, 5, 25, 25);
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(22);
+                    doc.text(data.title.toUpperCase(), 46, 22);
+                } catch (e) {
+                    console.error("Error adding logo to invoice:", e);
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(22);
+                    doc.text(data.title.toUpperCase(), 15, 22);
+                }
+            } else {
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.text(data.title.toUpperCase(), 15, 22);
+            }
 
             // Invoice Metadata (Right Aligned in Header Block)
             doc.setFontSize(10);
@@ -416,6 +461,15 @@ document.addEventListener("DOMContentLoaded", () => {
             doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
             doc.rect(0, 0, pageWidth, 38, 'F');
 
+            // Render Avatar/Logo if available
+            if (data.logo) {
+                try {
+                    doc.addImage(data.logo, 'PNG', pageWidth - 43, 5, 28, 28);
+                } catch (e) {
+                    console.error("Error adding logo to resume:", e);
+                }
+            }
+
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
@@ -427,7 +481,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Contact Info line
             doc.setFontSize(9);
-            doc.text(`Email: ${data.email}   |   Phone: ${data.phone}   |   Portfolio: ${data.website}`, 15, 31);
+            // If logo is present, truncate info line so it doesn't overlap logo area
+            const contactText = `Email: ${data.email}   |   Phone: ${data.phone}   |   Portfolio: ${data.website}`;
+            const displayContact = data.logo ? `Email: ${data.email}   |   Phone: ${data.phone}` : contactText;
+            doc.text(displayContact, 15, 31);
 
             // Body Columns Setup
             const colWidth = (pageWidth - 38) / 3; // 3 column ratios
@@ -498,6 +555,15 @@ document.addEventListener("DOMContentLoaded", () => {
             // Simple elegant header bar (top margin line)
             doc.setFillColor(brandColor.r, brandColor.g, brandColor.b);
             doc.rect(15, 15, pageWidth - 30, 2, 'F');
+
+            // Render Brand Logo if available
+            if (data.logo) {
+                try {
+                    doc.addImage(data.logo, 'PNG', 15, 20, 20, 20);
+                } catch (e) {
+                    console.error("Error adding logo to letter:", e);
+                }
+            }
 
             // Sender Information (Top Right)
             doc.setTextColor(15, 23, 42);
@@ -632,6 +698,280 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadPdfBtn.addEventListener("click", () => {
         generatePDFDocument(true);
     });
+
+    // --- AI Interactive Workspace Integration ---
+
+    // Control Tabs Switcher
+    function switchControlTab(tabKey) {
+        if (activeControlTab === tabKey) return;
+        activeControlTab = tabKey;
+
+        // Reset all tabs styles
+        [tabManual, tabAiContent, tabAiImage].forEach(tab => {
+            tab.classList.remove("bg-rose-600", "text-white", "shadow-sm");
+            tab.classList.add("text-slate-600", "hover:text-slate-900", "hover:bg-slate-50");
+        });
+
+        // Hide all panels
+        [manualFieldsPanel, aiContentPanel, aiImagePanel].forEach(panel => {
+            panel.classList.add("hidden");
+        });
+
+        // Activate selected tab & panel
+        if (tabKey === "manual") {
+            tabManual.classList.add("bg-rose-600", "text-white", "shadow-sm");
+            tabManual.classList.remove("text-slate-600", "hover:text-slate-900", "hover:bg-slate-50");
+            manualFieldsPanel.classList.remove("hidden");
+        } else if (tabKey === "aiContent") {
+            tabAiContent.classList.add("bg-rose-600", "text-white", "shadow-sm");
+            tabAiContent.classList.remove("text-slate-600", "hover:text-slate-900", "hover:bg-slate-50");
+            aiContentPanel.classList.remove("hidden");
+        } else if (tabKey === "aiImage") {
+            tabAiImage.classList.add("bg-rose-600", "text-white", "shadow-sm");
+            tabAiImage.classList.remove("text-slate-600", "hover:text-slate-900", "hover:bg-slate-50");
+            aiImagePanel.classList.remove("hidden");
+        }
+    }
+
+    tabManual.addEventListener("click", () => switchControlTab("manual"));
+    tabAiContent.addEventListener("click", () => switchControlTab("aiContent"));
+    tabAiImage.addEventListener("click", () => switchControlTab("aiImage"));
+
+    // AI Content Assistant Generation Handler
+    generateTextBtn.addEventListener("click", async () => {
+        const promptInput = aiTextPrompt.value.trim();
+        if (!promptInput) {
+            showTextStatus("Please provide some description or instructions.", "error");
+            return;
+        }
+
+        const model = geminiTextModel.value;
+        showTextStatus("Consulting Gemini AI to compose document...", "loading");
+        generateTextBtn.disabled = true;
+
+        try {
+            // Construct template-specific system instruction and JSON output request
+            let promptSchema = "";
+            if (currentTemplate === "invoice") {
+                promptSchema = `Your response must be a single, valid JSON object strictly matching this schema. Provide only the raw JSON. Do not include markdown block markers like \`\`\`json. Do not include formatting outside the JSON:
+{
+  "companyName": "Name of the billing company",
+  "companyEmail": "Email of the billing company",
+  "clientName": "Name of the client being billed",
+  "clientEmail": "Email of the client being billed",
+  "invoiceNumber": "E.g. INV-2026-XXXX",
+  "invoiceDate": "YYYY-MM-DD",
+  "itemName1": "Description of service 1",
+  "itemQty1": 1,
+  "itemRate1": 150,
+  "itemName2": "Description of service 2",
+  "itemQty2": 4,
+  "itemRate2": 100,
+  "terms": "Payment terms and polite note"
+}`;
+            } else if (currentTemplate === "resume") {
+                promptSchema = `Your response must be a single, valid JSON object strictly matching this schema. Provide only the raw JSON. Do not include markdown block markers like \`\`\`json. Do not include formatting outside the JSON. Keep the summary concise and professional, and render work experience beautifully using bullet points with hyphens:
+{
+  "fullName": "Professional full name",
+  "jobTitle": "Target job title",
+  "email": "Professional email address",
+  "phone": "Phone number",
+  "website": "Portfolio or GitHub URL",
+  "summary": "Compelling 2-3 sentence professional summary",
+  "experience": "Title | Company (Dates)\\n- Accomplishment 1\\n- Accomplishment 2\\n\\nTitle 2 | Company 2 (Dates)\\n- Accomplishment 3",
+  "education": "Degree | University (Dates)",
+  "skills": "Comma separated technical skills list"
+}`;
+            } else if (currentTemplate === "letter") {
+                promptSchema = `Your response must be a single, valid JSON object strictly matching this schema. Provide only the raw JSON. Do not include markdown block markers like \`\`\`json. Do not include formatting outside the JSON:
+{
+  "senderName": "Sender full name",
+  "senderTitle": "Sender professional title",
+  "senderCompany": "Sender organization",
+  "recipientName": "Recipient full name",
+  "recipientCompany": "Recipient organization",
+  "recipientAddress": "Recipient full address",
+  "date": "YYYY-MM-DD",
+  "subject": "Subject of the letter",
+  "body": "The full detailed letter body, formatted with paragraph breaks using \\n\\n",
+  "signoff": "Polite sign-off, e.g. Sincerely yours,"
+}`;
+            }
+
+            const finalPrompt = `You are an expert professional document copywriter. Compose high-quality, beautifully phrased, and fully realistic content based on the following user requirements:
+
+User Request: "${promptInput}"
+
+${promptSchema}`;
+
+            const response = await fetch("/api/gemini/generate-content", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: model,
+                    prompt: finalPrompt,
+                    systemInstruction: "You are an elite document compiler. You output structured JSON matching specified schemas. Never output text outside the JSON block."
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Failed to call Gemini server endpoint");
+            }
+
+            const data = await response.json();
+            if (!data.text) {
+                throw new Error("No text content returned from the Gemini API");
+            }
+
+            // Clean the JSON text
+            let rawText = data.text.trim();
+            // Remove markdown codeblock tags if they were included
+            if (rawText.startsWith("```")) {
+                rawText = rawText.replace(/^```[a-zA-Z]*/, "").replace(/```$/, "").trim();
+            }
+
+            const parsedContent = JSON.parse(rawText);
+
+            // Update templateData matching keys
+            for (const key in parsedContent) {
+                if (templateData[currentTemplate][key] !== undefined) {
+                    templateData[currentTemplate][key] = parsedContent[key];
+                }
+            }
+
+            showTextStatus("Document content successfully composed!", "success");
+            
+            // Re-render fields in manual editor & update Live PDF
+            renderFields();
+            
+            // Automatically switch back to Manual Fields panel so they see the populated fields
+            setTimeout(() => {
+                switchControlTab("manual");
+                showTextStatus("", "idle");
+            }, 1500);
+
+        } catch (err) {
+            console.error("AI composition error:", err);
+            showTextStatus(`AI Composing failed: ${err.message || err}`, "error");
+        } finally {
+            generateTextBtn.disabled = false;
+        }
+    });
+
+    function showTextStatus(msg, type) {
+        if (!msg || type === "idle") {
+            aiTextStatus.classList.add("hidden");
+            return;
+        }
+        aiTextStatus.classList.remove("hidden", "bg-slate-50", "border-slate-200", "text-slate-600", "bg-rose-50", "border-rose-200", "text-rose-600", "bg-emerald-50", "border-emerald-200", "text-emerald-600");
+
+        if (type === "loading") {
+            aiTextStatus.innerHTML = `<div class="flex items-center justify-center space-x-2"><i data-lucide="loader" class="w-4 h-4 text-amber-500 animate-spin"></i><span>${msg}</span></div>`;
+            aiTextStatus.classList.add("bg-slate-50", "border-slate-200", "text-slate-600");
+        } else if (type === "success") {
+            aiTextStatus.innerHTML = `<div class="flex items-center justify-center space-x-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i><span>${msg}</span></div>`;
+            aiTextStatus.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-600");
+        } else {
+            aiTextStatus.innerHTML = `<div class="flex items-center justify-center space-x-1.5"><i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i><span>${msg}</span></div>`;
+            aiTextStatus.classList.add("bg-rose-50", "border-rose-200", "text-rose-600");
+        }
+        lucide.createIcons();
+    }
+
+    // AI Image/Logo Generation Handler
+    generateImageBtn.addEventListener("click", async () => {
+        const promptInput = aiImagePrompt.value.trim();
+        if (!promptInput) {
+            showImageStatus("Please provide a description of the image/logo you wish to design.", "error");
+            return;
+        }
+
+        const model = geminiImageModel.value;
+        const size = aiImageSize.value;
+        const aspectRatio = aiAspectRatio.value;
+
+        showImageStatus("Designing logo using Gemini (this may take a moment)...", "loading");
+        generateImageBtn.disabled = true;
+        aiImageResultContainer.classList.add("hidden");
+
+        try {
+            const response = await fetch("/api/gemini/generate-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: model,
+                    prompt: promptInput,
+                    size: size,
+                    aspectRatio: aspectRatio
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || "Failed to contact Image Generation server");
+            }
+
+            const data = await response.json();
+            if (!data.imageUrl) {
+                throw new Error("No image data URL was returned by the Gemini model.");
+            }
+
+            // Successfully received image
+            latestGeneratedImageBase64 = data.imageUrl;
+            aiImageResultPreview.src = data.imageUrl;
+            aiImageInfoText.textContent = `${model.split("-")[1].toUpperCase()} • ${size} • ${aspectRatio}`;
+            
+            showImageStatus("Brand Logo successfully designed!", "success");
+            aiImageResultContainer.classList.remove("hidden");
+
+        } catch (err) {
+            console.error("Logo generation error:", err);
+            showImageStatus(`Logo Design failed: ${err.message || err}`, "error");
+        } finally {
+            generateImageBtn.disabled = false;
+        }
+    });
+
+    // Apply & Insert Logo Handler
+    insertImageBtn.addEventListener("click", () => {
+        if (!latestGeneratedImageBase64) return;
+
+        // Apply to current active template logo slot
+        templateData[currentTemplate].logo = latestGeneratedImageBase64;
+        
+        // Success indicator
+        showImageStatus("Logo successfully applied to PDF layout!", "success");
+        
+        // Rebuild preview
+        triggerPDFRebuild();
+
+        // After a brief delay, return to manual fields to let the user see details
+        setTimeout(() => {
+            switchControlTab("manual");
+            showImageStatus("", "idle");
+        }, 1200);
+    });
+
+    function showImageStatus(msg, type) {
+        if (!msg || type === "idle") {
+            aiImageStatus.classList.add("hidden");
+            return;
+        }
+        aiImageStatus.classList.remove("hidden", "bg-slate-50", "border-slate-200", "text-slate-600", "bg-rose-50", "border-rose-200", "text-rose-600", "bg-emerald-50", "border-emerald-200", "text-emerald-600");
+
+        if (type === "loading") {
+            aiImageStatus.innerHTML = `<div class="flex items-center justify-center space-x-2"><i data-lucide="loader" class="w-4 h-4 text-indigo-500 animate-spin"></i><span>${msg}</span></div>`;
+            aiImageStatus.classList.add("bg-slate-50", "border-slate-200", "text-slate-600");
+        } else if (type === "success") {
+            aiImageStatus.innerHTML = `<div class="flex items-center justify-center space-x-1.5"><i data-lucide="check-circle" class="w-4 h-4 text-emerald-500"></i><span>${msg}</span></div>`;
+            aiImageStatus.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-600");
+        } else {
+            aiImageStatus.innerHTML = `<div class="flex items-center justify-center space-x-1.5"><i data-lucide="alert-circle" class="w-4 h-4 text-rose-500"></i><span>${msg}</span></div>`;
+            aiImageStatus.classList.add("bg-rose-50", "border-rose-200", "text-rose-600");
+        }
+        lucide.createIcons();
+    }
 
     // Bootstrapping
     renderFields();
